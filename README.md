@@ -1,14 +1,11 @@
 # :diamond_shape_with_a_dot_inside: cgltf
-**Single-file/stb-style C glTF loader and writer**
-
-[![Build Status](https://github.com/jkuhlmann/cgltf/workflows/build/badge.svg)](https://github.com/jkuhlmann/cgltf/actions)
+**C glTF loader and writer**
 
 Used in: [bgfx](https://github.com/bkaradzic/bgfx), [Filament](https://github.com/google/filament), [gltfpack](https://github.com/zeux/meshoptimizer/tree/master/gltf), [raylib](https://github.com/raysan5/raylib), and more!
 
 ## Usage: Loading
 Loading from file:
 ```c
-#define CGLTF_IMPLEMENTATION
 #include "cgltf.h"
 
 cgltf_options options = {0};
@@ -23,7 +20,6 @@ if (result == cgltf_result_success)
 
 Loading from memory:
 ```c
-#define CGLTF_IMPLEMENTATION
 #include "cgltf.h"
 
 void* buf; /* Pointer to glb or gltf file data */
@@ -42,16 +38,14 @@ if (result == cgltf_result_success)
 Note that cgltf does not load the contents of extra files such as buffers or images into memory by default. You'll need to read these files yourself using URIs from `data.buffers[]` or `data.images[]` respectively.
 For buffer data, you can alternatively call `cgltf_load_buffers`, which will use `FILE*` APIs to open and read buffer files. This automatically decodes base64 data URIs in buffers. For data URIs in images, you will need to use `cgltf_load_buffer_base64`.
 
-**For more in-depth documentation and a description of the public interface refer to the top of the `cgltf.h` file.**
+**For more in-depth documentation and a description of the public interface refer to the top of the `cgltf.h` file upstream.**
 
 ## Usage: Writing
 When writing glTF data, you need a valid `cgltf_data` structure that represents a valid glTF document. You can construct such a structure yourself or load it using the loader functions described above. The writer functions do not deallocate any memory. So, you either have to do it manually or call `cgltf_free()` if you got the data by loading it from a glTF document.
 
 Writing to file:
 ```c
-#define CGLTF_IMPLEMENTATION
-#define CGLTF_WRITE_IMPLEMENTATION
-#include "cgltf_write.h"
+#include "cgltf.h"
 
 cgltf_options options = {0};
 cgltf_data* data = /* TODO must be valid data */;
@@ -64,9 +58,7 @@ if (result != cgltf_result_success)
 
 Writing to memory:
 ```c
-#define CGLTF_IMPLEMENTATION
-#define CGLTF_WRITE_IMPLEMENTATION
-#include "cgltf_write.h"
+#include "cgltf.h"
 cgltf_options options = {0};
 cgltf_data* data = /* TODO must be valid data */;
 
@@ -83,7 +75,7 @@ if (written != size)
 
 Note that cgltf does not write the contents of extra files such as buffers or images. You'll need to write this data yourself.
 
-**For more in-depth documentation and a description of the public interface refer to the top of the `cgltf_write.h` file.**
+**For more in-depth documentation and a description of the public interface refer to the top of the `cgltf_write.h` file upstream.**
 
 
 ## Features
@@ -116,16 +108,10 @@ cgltf also supports some glTF extensions:
 cgltf does **not** yet support unlisted extensions. However, unlisted extensions can be accessed via "extensions" member on objects.
 
 ## Building
-The easiest approach is to integrate the `cgltf.h` header file into your project. If you are unfamiliar with single-file C libraries (also known as stb-style libraries), this is how it goes:
-
-1. Include `cgltf.h` where you need the functionality.
-1. Have exactly one source file that defines `CGLTF_IMPLEMENTATION` before including `cgltf.h`.
-1. Use the cgltf functions as described above.
-
-Support for writing can be found in a separate file called `cgltf_write.h` (which includes `cgltf.h`). Building it works analogously using the `CGLTF_WRITE_IMPLEMENTATION` define.
+Download this project and build with GNU Make. Static and dynamic libraries will be built which can then be installed or used elsewhere.
 
 ## Contributing
-Everyone is welcome to contribute to the library. If you find any problems, you can submit them using [GitHub's issue system](https://github.com/jkuhlmann/cgltf/issues). If you want to contribute code, you should fork the project and then send a pull request.
+Everyone is welcome to contribute to the library. If you find any problems, you can submit them using [GitHub's issue system](https://github.com/gilmorem560/cgltf/issues). If you want to contribute code, you should fork the project and then send a pull request.
 
 
 ## Dependencies
@@ -140,17 +126,3 @@ C headers being used by implementation:
 #include <stdio.h>
 #include <limits.h>
 ```
-
-Note, this library has a copy of the [JSMN JSON parser](https://github.com/zserge/jsmn) embedded in its source.
-
-## Testing
-There is a Python script in the `test/` folder that retrieves the glTF 2.0 sample files from the glTF-Sample-Models repository (https://github.com/KhronosGroup/glTF-Sample-Models/tree/master/2.0) and runs the library against all gltf and glb files.
-
-Here's one way to build and run the test:
-
-    cd test ; mkdir build ; cd build ; cmake .. -DCMAKE_BUILD_TYPE=Debug
-    make -j
-    cd ..
-    ./test_all.py
-
-There is also a llvm-fuzz test in `fuzz/`. See http://llvm.org/docs/LibFuzzer.html for more information.
